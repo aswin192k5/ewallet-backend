@@ -11,7 +11,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/payment")
-@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"})
+@CrossOrigin(origins = {
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+        "https://aswin192k5.github.io"    // ⭐ Frontend hosted on GitHub Pages
+})
 public class PaymentController {
 
     @Autowired
@@ -19,18 +23,20 @@ public class PaymentController {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    // ——— Create Razorpay order ———
+    // ---------------------------------------------------------
+    // CREATE RAZORPAY ORDER
+    // ---------------------------------------------------------
     @PostMapping("/create-order")
     public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> payload) {
         try {
             if (!payload.containsKey("amount")) {
                 return ResponseEntity.badRequest().body(Map.of("error", "amount_missing"));
             }
+
             double amount = Double.parseDouble(payload.get("amount").toString());
             String currency = payload.getOrDefault("currency", "INR").toString();
             String receipt = payload.getOrDefault("receipt", "rcpt_" + System.currentTimeMillis()).toString();
 
-            // Returns { id, amount, currency, key } to frontend
             Map<String, Object> order = paymentService.createOrder(amount, currency, receipt);
             return ResponseEntity.ok(order);
 
@@ -41,12 +47,16 @@ public class PaymentController {
         }
     }
 
-    // ——— Verify payment signature and recharge wallet ———
+    // ---------------------------------------------------------
+    // VERIFY PAYMENT & RECHARGE WALLET
+    // ---------------------------------------------------------
     @PostMapping("/verify")
     public ResponseEntity<?> verifyAndRecharge(@RequestBody Map<String, Object> payload) {
         try {
             String username = payload.getOrDefault("username", "").toString();
-            if (username.isBlank()) return ResponseEntity.badRequest().body(Map.of("error", "username_missing"));
+            if (username.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "username_missing"));
+            }
 
             double amount = Double.parseDouble(payload.getOrDefault("amount", "0").toString());
             String razorpayOrderId = payload.getOrDefault("razorpay_order_id", "").toString();
@@ -62,8 +72,12 @@ public class PaymentController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("status", "verification_failed"));
             }
 
-            // Call your existing endpoint to update the user's balance
-            String rechargeUrl = "http://localhost:8080/api/user/recharge";
+            // ---------------------------------------------------------
+            // UPDATED — USE DEPLOYED BACKEND URL INSTEAD OF localhost
+            // ---------------------------------------------------------
+
+            String rechargeUrl = "https://ewallet-backend-2-6ge9.onrender.com/api/user/recharge";
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -72,11 +86,14 @@ public class PaymentController {
             rechargeBody.put("amount", amount);
 
             HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(rechargeBody, headers);
-            ResponseEntity<Map> rechargeResponse = restTemplate.postForEntity(rechargeUrl, httpEntity, Map.class);
+
+            ResponseEntity<Map> rechargeResponse =
+                    restTemplate.postForEntity(rechargeUrl, httpEntity, Map.class);
 
             if (!rechargeResponse.getStatusCode().is2xxSuccessful()) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Map.of("status", "recharge_failed", "code", rechargeResponse.getStatusCodeValue()));
+                        .body(Map.of("status", "recharge_failed",
+                                "code", rechargeResponse.getStatusCodeValue()));
             }
 
             Map<?, ?> body = rechargeResponse.getBody();

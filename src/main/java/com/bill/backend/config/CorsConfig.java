@@ -14,15 +14,14 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        // ✅ Allow both forms — Live Server can use either 127.0.0.1 or localhost
-                        .allowedOrigins("http://127.0.0.1:5500", "http://localhost:5500")
-                        // ✅ Allow all HTTP methods your frontend might call
+                        .allowedOrigins(
+                                "http://127.0.0.1:5500",
+                                "http://localhost:5500",
+                                "https://aswin192k5.github.io"   // ✅ GitHub Pages frontend allowed
+                        )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        // ✅ Allow all headers (important for Fetch POST with body)
                         .allowedHeaders("*")
-                        // ⚠️ Allow credentials *only* if you’re using cookies/auth tokens
                         .allowCredentials(false)
-                        // ✅ Cache preflight response for 1 hour
                         .maxAge(3600);
             }
         };
