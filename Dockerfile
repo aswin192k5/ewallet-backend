@@ -16,4 +16,5 @@ RUN chmod +x .mvn/wrapper/maven-wrapper.jar || true
 RUN ./mvnw clean package -DskipTests
 
 # Run the jar explicitly
-CMD ["java", "-jar", "target/backend-1.0.0.jar"]
+CMD ["sh", "-c", "java -jar target/backend-1.0.0.jar --server.port=$PORT"]
+
