@@ -1,5 +1,4 @@
 FROM eclipse-temurin:17-jdk-alpine
-
 WORKDIR /app
 
 COPY . .
@@ -10,4 +9,4 @@ RUN chmod +x .mvn/wrapper/maven-wrapper.jar || true
 
 RUN ./mvnw clean package -DskipTests
 
-CMD ["java", "-jar", "target/*.jar"]
+CMD ["sh", "-c", "java -jar target/*.jar"]
