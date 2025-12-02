@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Energy Dashboard</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .data-box {
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-left: 6px solid #4CAF50;
+            background-color: #f9f9f9;
+        }
+
+        .data-label {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .data-value {
+            font-size: 22px;
+            color: #1a237e;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Welcome to Your Smart Energy Dashboard</h1>
+
+    <div class="data-box">
+        <div class="data-label">ESP32 MAC:</div>
+        <div class="data-value" id="espMac"></div>
+    </div>
+
+    <div class="data-box">
+        <div class="data-label">Energy Usage:</div>
+        <div class="data-value" id="energy">0.00 kWh</div>
+    </div>
+
+    <div class="data-box">
+        <div class="data-label">Voltage:</div>
+        <div class="data-value" id="voltage">0 V</div>
+    </div>
+
+    <div class="data-box">
+        <div class="data-label">Temperature:</div>
+        <div class="data-value" id="temperature">0 °C</div>
+    </div>
+
+    <div class="data-box">
+        <div class="data-label">Humidity:</div>
+        <div class="data-value" id="humidity">0 %</div>
+    </div>
+
+    <script>
+        // Replace with actual MAC address at runtime if needed
+        document.getElementById("espMac").innerText = window.location.pathname.split("-").slice(1).join("-").replace(".html", "");
+
+        // Example of fetching live data
+        const mac = document.getElementById("espMac").innerText;
+
+        async function fetchData() {
+            try {
+                const response = await fetch("/api/data/" + mac); // Endpoint not yet built
+                const data = await response.json();
+
+                document.getElementById("energy").innerText = data.energy + " kWh";
+                document.getElementById("voltage").innerText = data.voltage + " V";
+                document.getElementById("temperature").innerText = data.temperature + " °C";
+                document.getElementById("humidity").innerText = data.humidity + " %";
+
+            } catch (error) {
+                console.error("Data fetch failed", error);
+            }
+        }
+
+        // Update every 5 seconds
+        setInterval(fetchData, 5000);
+        fetchData();
+    </script>
+
+</body>
+</html>
